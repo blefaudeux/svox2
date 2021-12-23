@@ -137,8 +137,10 @@ def read_colmap_sparse(sparse_path):
             camera_id = camera_properties[0]
             model_id = camera_properties[1]
             model_name = CAMERA_MODEL_IDS[camera_properties[1]].model_name
-            assert model_name in ["SIMPLE_PINHOLE", "SIMPLE_RADIAL"], \
-                   "Only SIMPLE_PINHOLE/SIMPLE_RADIAL supported"
+            assert model_name in [
+                "SIMPLE_PINHOLE",
+                "SIMPLE_RADIAL",
+            ], "Only SIMPLE_PINHOLE/SIMPLE_RADIAL supported"
             width = camera_properties[2]
             height = camera_properties[3]
             num_params = CAMERA_MODEL_IDS[model_id].num_params
@@ -281,12 +283,12 @@ def main():
     feat_dir = osp.join(base_dir, "feature")
     base_scale_file = osp.join(base_dir, "base_scale.txt")
     if osp.exists(base_scale_file):
-        with open(base_scale_file, 'r') as f:
+        with open(base_scale_file, "r") as f:
             base_scale = float(f.read())
-        print('base_scale', base_scale)
+        print("base_scale", base_scale)
     else:
         base_scale = 1.0
-        print('base_scale defaulted to', base_scale)
+        print("base_scale defaulted to", base_scale)
     print("BASE_DIR", base_dir)
     print("POSE_DIR", pose_dir)
     print("FEATURE_DIR", feat_dir)
@@ -320,7 +322,13 @@ def main():
     K[0, 2] = cameras[0].params[1] / base_scale
     K[1, 2] = cameras[0].params[2] / base_scale
     print("f", K[0, 0], "c", K[0:2, 2])
-    np.savetxt(osp.join(base_dir, "intrinsics_colmap.txt" if args.colmap_suffix else "intrinsics.txt"), K)
+    np.savetxt(
+        osp.join(
+            base_dir,
+            "intrinsics_colmap.txt" if args.colmap_suffix else "intrinsics.txt",
+        ),
+        K,
+    )
     del K
 
     print("Get world scaling")

@@ -34,18 +34,18 @@ class NSVFDataset(DatasetBase):
         self,
         root,
         split,
-        epoch_size : Optional[int] = None,
+        epoch_size: Optional[int] = None,
         device: Union[str, torch.device] = "cpu",
         scene_scale: Optional[float] = None,  # Scene scaling
-        factor: int = 1,                      # Image scaling (on ray gen; use gen_rays(factor) to dynamically change scale)
-        scale : Optional[float] = 1.0,                    # Image scaling (on load)
+        factor: int = 1,  # Image scaling (on ray gen; use gen_rays(factor) to dynamically change scale)
+        scale: Optional[float] = 1.0,  # Image scaling (on load)
         permutation: bool = True,
         white_bkgd: bool = True,
         normalize_by_bbox: bool = False,
-        data_bbox_scale : float = 1.1,                    # Only used if normalize_by_bbox
-        cam_scale_factor : float = 0.95,
+        data_bbox_scale: float = 1.1,  # Only used if normalize_by_bbox
+        cam_scale_factor: float = 0.95,
         normalize_by_camera: bool = True,
-        **kwargs
+        **kwargs,
     ):
         super().__init__()
         assert path.isdir(root), f"'{root}' is not a directory"
@@ -63,7 +63,7 @@ class NSVFDataset(DatasetBase):
 
         split_name = split if split != "test_train" else "train"
 
-        print("LOAD NSVF DATA", root, 'split', split)
+        print("LOAD NSVF DATA", root, "split", split)
 
         self.split = split
 
@@ -71,6 +71,7 @@ class NSVFDataset(DatasetBase):
             if len(x) > 2 and x[1] == "_":
                 return x[2:]
             return x
+
         def look_for_dir(cands, required=True):
             for cand in cands:
                 if path.isdir(path.join(root, cand)):
@@ -95,12 +96,14 @@ class NSVFDataset(DatasetBase):
                 test_img_files = [x for x in img_files if x.startswith("1_")]
             img_files = test_img_files
 
-        assert len(img_files) > 0, "No matching images in directory: " + path.join(data_dir, img_dir_name)
+        assert len(img_files) > 0, "No matching images in directory: " + path.join(
+            data_dir, img_dir_name
+        )
         self.img_files = img_files
 
         dynamic_resize = scale < 1
         self.use_integral_scaling = False
-        scaled_img_dir = ''
+        scaled_img_dir = ""
         if dynamic_resize and abs((1.0 / scale) - round(1.0 / scale)) < 1e-9:
             resized_dir = img_dir_name + "_" + str(round(1.0 / scale))
             if path.exists(path.join(root, resized_dir)):
@@ -132,10 +135,16 @@ class NSVFDataset(DatasetBase):
 
             all_gt.append(torch.from_numpy(image))
 
-
         self.c2w_f64 = torch.stack(all_c2w)
 
-        print('NORMALIZE BY?', 'bbox' if normalize_by_bbox else 'camera' if normalize_by_camera else 'manual')
+        print(
+            "NORMALIZE BY?",
+            "bbox"
+            if normalize_by_bbox
+            else "camera"
+            if normalize_by_camera
+            else "manual",
+        )
         if normalize_by_bbox:
             # Not used, but could be helpful
             bbox_path = path.join(root, "bbox.txt")
@@ -149,11 +158,18 @@ class NSVFDataset(DatasetBase):
                 # Rescale
                 scene_scale = 1.0 / radius.max()
             else:
-                warn('normalize_by_bbox=True but bbox.txt was not available')
+                warn("normalize_by_bbox=True but bbox.txt was not available")
         elif normalize_by_camera:
-            norm_pose_files = sorted(os.listdir(path.join(root, pose_dir_name)), key=sort_key)
-            norm_poses = np.stack([np.loadtxt(path.join(root, pose_dir_name, x)).reshape(-1, 4)
-                                    for x in norm_pose_files], axis=0)
+            norm_pose_files = sorted(
+                os.listdir(path.join(root, pose_dir_name)), key=sort_key
+            )
+            norm_poses = np.stack(
+                [
+                    np.loadtxt(path.join(root, pose_dir_name, x)).reshape(-1, 4)
+                    for x in norm_pose_files
+                ],
+                axis=0,
+            )
 
             # Select subset of files
             T, sscale = similarity_from_cameras(norm_poses)
@@ -167,7 +183,7 @@ class NSVFDataset(DatasetBase):
             #  scene_scale = cam_scale_factor / radius
             #  print('good', self.c2w_f64[:2], scene_scale)
 
-        print('scene_scale', scene_scale)
+        print("scene_scale", scene_scale)
         self.c2w_f64[:, :3, 3] *= scene_scale
         self.c2w = self.c2w_f64.float()
 
@@ -206,8 +222,8 @@ class NSVFDataset(DatasetBase):
             fy *= scale_h
             cy *= scale_h
 
-        self.intrins_full : Intrin = Intrin(fx, fy, cx, cy)
-        print(' intrinsics (loaded reso)', self.intrins_full)
+        self.intrins_full: Intrin = Intrin(fx, fy, cx, cy)
+        print(" intrinsics (loaded reso)", self.intrins_full)
 
         self.scene_scale = scene_scale
         if self.split == "train":
@@ -215,4 +231,4 @@ class NSVFDataset(DatasetBase):
         else:
             # Rays are not needed for testing
             self.h, self.w = self.h_full, self.w_full
-            self.intrins : Intrin = self.intrins_full
+            self.intrins: Intrin = self.intrins_full

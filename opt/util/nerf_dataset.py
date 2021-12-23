@@ -30,21 +30,21 @@ class NeRFDataset(DatasetBase):
         self,
         root,
         split,
-        epoch_size : Optional[int] = None,
+        epoch_size: Optional[int] = None,
         device: Union[str, torch.device] = "cpu",
         scene_scale: Optional[float] = None,
         factor: int = 1,
-        scale : Optional[float] = None,
+        scale: Optional[float] = None,
         permutation: bool = True,
         white_bkgd: bool = True,
-        n_images = None,
-        **kwargs
+        n_images=None,
+        **kwargs,
     ):
         super().__init__()
         assert path.isdir(root), f"'{root}' is not a directory"
 
         if scene_scale is None:
-            scene_scale = 2/3
+            scene_scale = 2 / 3
         if scale is None:
             scale = 1.0
         self.device = device
@@ -77,9 +77,7 @@ class NeRFDataset(DatasetBase):
 
             all_c2w.append(c2w)
             all_gt.append(torch.from_numpy(im_gt))
-        focal = float(
-            0.5 * all_gt[0].shape[1] / np.tan(0.5 * j["camera_angle_x"])
-        )
+        focal = float(0.5 * all_gt[0].shape[1] / np.tan(0.5 * j["camera_angle_x"]))
         self.c2w = torch.stack(all_c2w)
         self.c2w[:, :3, 3] *= scene_scale
 
@@ -95,15 +93,17 @@ class NeRFDataset(DatasetBase):
         # Choose a subset of training images
         if n_images is not None:
             if n_images > self.n_images:
-                print(f'using {self.n_images} available training views instead of the requested {n_images}.')
+                print(
+                    f"using {self.n_images} available training views instead of the requested {n_images}."
+                )
                 n_images = self.n_images
             self.n_images = n_images
-            self.gt = self.gt[0:n_images,...]
-            self.c2w = self.c2w[0:n_images,...]
+            self.gt = self.gt[0:n_images, ...]
+            self.c2w = self.c2w[0:n_images, ...]
 
-        self.intrins_full : Intrin = Intrin(focal, focal,
-                                            self.w_full * 0.5,
-                                            self.h_full * 0.5)
+        self.intrins_full: Intrin = Intrin(
+            focal, focal, self.w_full * 0.5, self.h_full * 0.5
+        )
 
         self.split = split
         self.scene_scale = scene_scale
@@ -112,7 +112,6 @@ class NeRFDataset(DatasetBase):
         else:
             # Rays are not needed for testing
             self.h, self.w = self.h_full, self.w_full
-            self.intrins : Intrin = self.intrins_full
+            self.intrins: Intrin = self.intrins_full
 
         self.should_use_background = False  # Give warning
-

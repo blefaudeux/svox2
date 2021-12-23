@@ -7,13 +7,16 @@ import numpy as np
 import os
 import imageio
 
-def get_image_size(path : str):
+
+def get_image_size(path: str):
     """
     Get image size without loading it
     """
     from PIL import Image
+
     im = Image.open(path)
-    return im.size[1], im.size[0]    # H, W
+    return im.size[1], im.size[0]  # H, W
+
 
 def _minify(basedir, factors=[], resolutions=[]):
     needtoload = False
@@ -407,10 +410,4 @@ def load_llff_data(
     reference_depth = train_bds[reference_view_id]
     print(reference_depth)
 
-    return (
-        reference_depth,
-        reference_view_id,
-        render_poses,
-        poses,
-        intrinsic
-    )
+    return (reference_depth, reference_view_id, render_poses, poses, intrinsic)

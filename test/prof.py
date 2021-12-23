@@ -9,10 +9,10 @@ from matplotlib import pyplot as plt
 import torch.cuda.profiler as profiler
 import pyprof
 
-device='cuda:0'
+device = "cuda:0"
 
-GRID_FILE = 'lego.npy'
-grid = svox2.SparseGrid(reso=256, device='cpu', radius=1.3256)
+GRID_FILE = "lego.npy"
+grid = svox2.SparseGrid(reso=256, device="cpu", radius=1.3256)
 data = torch.from_numpy(np.load(GRID_FILE)).view(-1, grid.data_dim)
 grid.sh_data.data = data[..., 1:]
 grid.density_data.data = data[..., :1]
@@ -22,7 +22,7 @@ grid = grid.cuda()
 N_RAYS = 5000
 #  origins = torch.full((N_RAYS, 3), fill_value=0.0, device=device, dtype=dtype)
 origins = torch.zeros((N_RAYS, 3), device=device, dtype=torch.float32)
-dirs : torch.Tensor = torch.randn((N_RAYS, 3), device=device, dtype=torch.float32)
+dirs: torch.Tensor = torch.randn((N_RAYS, 3), device=device, dtype=torch.float32)
 dirs /= torch.norm(dirs, dim=-1, keepdim=True)
 rays = svox2.Rays(origins, dirs)
 

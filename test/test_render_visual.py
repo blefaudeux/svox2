@@ -3,22 +3,26 @@ import torch
 import numpy as np
 from util import Timing
 from matplotlib import pyplot as plt
-device='cuda:0'
 
-GRID_FILE = 'lego.npy'
-grid = svox2.SparseGrid(reso=256, device='cpu', radius=1.3256)
+device = "cuda:0"
+
+GRID_FILE = "lego.npy"
+grid = svox2.SparseGrid(reso=256, device="cpu", radius=1.3256)
 data = torch.from_numpy(np.load(GRID_FILE)).view(-1, grid.data_dim)
 grid.sh_data.data = data[..., 1:]
 grid.density_data.data = data[..., :1]
 #  grid.resample(128, use_z_order=True)
 grid = grid.cuda()
 
-c2w = torch.tensor([
-                [ -0.9999999403953552, 0.0, 0.0, 0.0 ],
-                [ 0.0, -0.7341099977493286, 0.6790305972099304, 2.737260103225708 ],
-                [ 0.0, 0.6790306568145752, 0.7341098785400391, 2.959291696548462 ],
-                [ 0.0, 0.0, 0.0, 1.0 ],
-            ], device=device)
+c2w = torch.tensor(
+    [
+        [-0.9999999403953552, 0.0, 0.0, 0.0],
+        [0.0, -0.7341099977493286, 0.6790305972099304, 2.737260103225708],
+        [0.0, 0.6790306568145752, 0.7341098785400391, 2.959291696548462],
+        [0.0, 0.0, 0.0, 1.0],
+    ],
+    device=device,
+)
 
 with torch.no_grad():
     width = height = 800
